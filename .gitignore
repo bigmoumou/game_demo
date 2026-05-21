@@ -1,0 +1,5 @@
+/.playwright-mcp/
+/output/
+/test099-*.png
+/.env
+/.env.*

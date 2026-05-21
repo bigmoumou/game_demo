@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>戰國妖狐傳 — RPG Demo</title>
+  <meta name="description" content="三場景戰國妖狐像素 RPG MVP，可探索、對話、取得御守並進行即時輕戰鬥。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23090b0d'/%3E%3Cpath d='M18 44 26 12l6 15 6-15 8 32-14-9-14 9Z' fill='%23ffd700'/%3E%3Ccircle cx='32' cy='34' r='5' fill='%239d4edd'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game-shell">
+    <header class="game-header">
+      <div>
+        <h1>戰國妖狐傳</h1>
+        <p>狐火荒社 · 迷霧森林 · 古戰場</p>
+      </div>
+      <div class="header-actions">
+        <label class="audio-toggle">
+          <span>音樂</span>
+          <input type="checkbox" id="checkbox-bgm">
+          <span class="switch-slider"></span>
+        </label>
+        <label class="volume-control" for="input-bgm-volume">
+          <span id="val-bgm-volume">50</span>%
+          <input type="range" id="input-bgm-volume" min="0" max="100" value="50">
+        </label>
+      </div>
+    </header>
+
+    <section class="stage-section" aria-labelledby="stage-title">
+      <h2 class="visually-hidden" id="stage-title">戰國妖狐傳遊戲舞台</h2>
+      <div class="stage-wrapper">
+        <div id="game-stage" class="game-stage">
+          <div class="stage-vignette"></div>
+
+          <div class="hud top-hud">
+            <div class="hud-panel hp-panel" aria-label="玩家生命值">
+              <span class="hud-label">HP</span>
+              <div id="hp-hearts" class="hp-hearts"></div>
+            </div>
+            <div class="hud-panel objective-panel">
+              <span class="hud-label">目標</span>
+              <strong id="objective-text">與森林中的神秘商人交談</strong>
+            </div>
+            <div class="hud-panel map-panel" aria-label="目前地圖">
+              <span id="map-node-left" class="map-node">荒社</span>
+              <span id="map-node-center" class="map-node active">森林</span>
+              <span id="map-node-right" class="map-node locked">古戰場</span>
+            </div>
+          </div>
+
+          <div id="scene-label" class="scene-label">迷霧森林</div>
+
+          <div id="player-fox" class="player-fox"></div>
+          <div id="npc-merchant" class="npc-merchant"></div>
+          <div id="shrine-charm" class="shrine-charm" aria-hidden="true"></div>
+          <div id="enemy-fallen-samurai" class="enemy-fallen-samurai"></div>
+          <div id="enemy-hp" class="enemy-hp" aria-hidden="true">
+            <span id="enemy-hp-label">落武者妖怪 - 一相</span>
+            <div><i id="enemy-hp-fill"></i></div>
+          </div>
+          <div id="slash-effect" class="slash-effect"></div>
+          <div id="combat-effects" class="combat-effects" aria-hidden="true"></div>
+
+          <div id="interact-hint" class="interact-hint">Space 互動</div>
+          <div id="toast" class="toast"></div>
+
+          <div id="dialog-box" class="dialog-box" role="dialog" aria-live="polite">
+            <div id="dialog-name" class="dialog-name">神秘商人</div>
+            <div id="dialog-text" class="dialog-text"></div>
+            <div id="dialog-hint" class="dialog-hint">Space / 點擊繼續</div>
+          </div>
+
+          <div id="ending-card" class="ending-card">
+            <span>Demo Clear</span>
+            <strong>狐火照亮了古戰場，迷霧暫時退去。</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-strip">
+        <div class="control-instructions">
+          <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移動
+          <kbd>Space</kbd> 互動
+          <kbd>J</kbd> 攻擊
+        </div>
+        <div class="touch-controls">
+          <div class="dpad" id="virtual-dpad">
+            <button id="btn-up" class="dpad-btn up" aria-label="向上移動">▲</button>
+            <button id="btn-left" class="dpad-btn left" aria-label="向左移動">◀</button>
+            <button id="btn-down" class="dpad-btn down" aria-label="向下移動">▼</button>
+            <button id="btn-right" class="dpad-btn right" aria-label="向右移動">▶</button>
+          </div>
+          <button id="btn-attack" class="attack-btn" aria-label="攻擊">Attack</button>
+        </div>
+      </div>
+    </section>
+
+    <details class="dev-tools">
+      <summary>Dev Tools · Sprite / Demo Controls</summary>
+      <div class="dev-grid">
+        <section class="control-card">
+          <h3>Sprite Sheet 網格微調</h3>
+          <p>用於校正玩家狐妖 spritesheet 的切圖與縮放。</p>
+
+          <label>單格寬度 <span id="val-frame-width">64</span>px
+            <input type="range" id="input-frame-width" min="16" max="512" value="64">
+          </label>
+          <label>單格高度 <span id="val-frame-height">64</span>px
+            <input type="range" id="input-frame-height" min="16" max="512" value="64">
+          </label>
+          <label>X 偏移 <span id="val-offset-x">0</span>px
+            <input type="range" id="input-offset-x" min="-100" max="100" value="0">
+          </label>
+          <label>Y 偏移 <span id="val-offset-y">0</span>px
+            <input type="range" id="input-offset-y" min="-100" max="100" value="0">
+          </label>
+          <label>角色縮放 <span id="val-img-scale">1.5</span>x
+            <input type="range" id="input-img-scale" min="0.2" max="4" step="0.01" value="1.5">
+          </label>
+          <label class="check-row">
+            <input type="checkbox" id="checkbox-remove-bg" checked>
+            啟用玩家灰白棋盤格去背
+          </label>
+        </section>
+
+        <section class="control-card">
+          <h3>動畫與測試</h3>
+          <label>動畫幀率 <span id="val-animation-speed">8</span>
+            <input type="range" id="input-animation-speed" min="1" max="24" value="8">
+          </label>
+          <label>移動速度 <span id="val-move-speed">4</span>
+            <input type="range" id="input-move-speed" min="1" max="12" value="4">
+          </label>
+          <label>單方向幀數 <span id="val-frames-count">4</span>
+            <input type="range" id="input-frames-count" min="2" max="4" value="4">
+          </label>
+          <div class="button-row">
+            <button id="btn-toggle-bg" class="control-btn">切換背景</button>
+            <button id="btn-reset-sprite" class="control-btn secondary">重設參數</button>
+          </div>
+        </section>
+
+        <section class="control-card info-card">
+          <h3>素材</h3>
+          <ul>
+            <li><code>assets/sprites/bg_left_shrine.png</code></li>
+            <li><code>assets/sprites/bg_forest.png</code></li>
+            <li><code>assets/sprites/bg_right_battlefield.png</code></li>
+            <li><code>assets/sprites/enemy_fallen_samurai.png</code></li>
+            <li><code>assets/audio/bgm_center.wav</code></li>
+            <li><code>assets/audio/bgm_left.wav</code></li>
+            <li><code>assets/audio/bgm_right.wav</code></li>
+            <li><code>assets/audio/bgm_battle.wav</code></li>
+            <li><code>assets/audio/bgm_victory.wav</code></li>
+          </ul>
+        </section>
+      </div>
+    </details>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
